@@ -1,0 +1,43 @@
+.canvas_style{
+border-style:solid;
+border-width:5px;
+}
+/*
+.outPopUp {
+	margin-top: auto;
+	margin-bottom: auto;
+	position: absolute;
+	width: 300px;
+	height: 300px;
+	z-index: 15;
+	top: 50%;
+	left: 50%;
+	margin: -150px 0 0 -150px;
+	background: #F8F8F8;
+	vertical-align: middle;
+	text-align: center;
+	border: 2px solid #a1a1a1;
+	padding: 10px 40px;
+	background: #dddddd;
+	width: 300px;
+	border-radius: 25px;
+	-moz-border-radius: 25px; // Old Firefox
+	box-shadow: 10px 10px 5px #888888;
+}
+*/
+.container {
+	margin-top: auto;
+	margin: 20px;
+	float: left;
+	padding: 60px;
+	width: 400px;
+	height: 400px;
+	z-index: 15;
+	background: #FFFFFF;
+	vertical-align: middle;
+	text-align: center;
+	border: 2px solid #a1a1a1;
+	border-radius: 25px;
+	-moz-border-radius: 25px; /* Old Firefox */
+	box-shadow: 10px 10px 5px #888888;
+}

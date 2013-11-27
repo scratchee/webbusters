@@ -1,0 +1,15 @@
+networking
+sound rework
+UI prettiness
+key binding?
+death count
+score count
+UFOs?
+smileys?
+shield collision effects
+add other special powers
+special ability strength control (done, needs testing)
+shields block other controls
+send worker time measure to main thread.
+temporal reconciliation on simulator loop (ie if something happened 0.2 secs ago, and we only just find out, simulate it from then, not from now)
+collisions across edges

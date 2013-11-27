@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="style.css">
+
+<script type="text/javascript" src="peer.min.js"></script>
+<!--<script type="text/javascript" src="peer.js"></script>-->
+<script type="text/javascript" src="html5slider.js"></script>
+<script type="text/javascript" src="settings.js" charset="utf-8"></script>
+
+
+
+<script type="text/javascript" src="game-shared-globals.js" charset="utf-8"></script>
+<script type="text/javascript" src="game-globals.js" charset="utf-8"></script>
+<script type="text/javascript" src="game-types.js" charset="utf-8"></script>
+<script type="text/javascript" src="game-setup.js" charset="utf-8"></script>
+<script type="text/javascript" src="game-networking.js" charset="utf-8"></script>
+<script type="text/javascript" src="game-draw.js" charset="utf-8"></script>
+<script type="text/javascript" src="game.js" charset="utf-8"></script>
+
+
+</head>
+<body onload="" onkeydown="keyDown(event)" onkeyup="keyUp(event)">
+
+	<div id="greeting" class="outPopUp">
+		<h1>webbusters</h1>
+		<p id="welcome">Choose number of players:</p>
+		<input type="text" value="1" id="num_ships"><br>
+		<button onclick="initSettings()" type="button">Play!</button>
+	</div>
+
+</body>
+
+</html>
