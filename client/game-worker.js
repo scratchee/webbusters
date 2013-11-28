@@ -493,7 +493,7 @@ function simulateStep()
 	
 	if(thisTime - lastTime < 16 && thisTime - lastFrameSentTime > 100)
 	{
-		//console.log("bad frame gap of " + (thisTime - lastFrameSentTime));
+		console.log("bad frame gap of " + (thisTime - lastFrameSentTime));
 	}
 	
 	if(thisTime - lastTime < 8)
@@ -647,6 +647,7 @@ function simulateStep()
 			}
 			else
 			{
+                stackCounter = 0;
 				runTimeout = setTimeout(simulateStep, 0);
 			}
 		}
