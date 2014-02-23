@@ -457,14 +457,6 @@ function simulateStep()
 	thisTime = timeMeasure.now();
 	thisStepStartTime = thisTime;
 	
-//	if(keyFrames[keyFrames.queueStart].active && Math.random() < 0.01)
-//		keyFrames[keyFrames.queueStart].revertToKeyFrame();
-	
-	if(!reSimulating && thisTime - lastTime > 32)
-	{
-		console.log("suspicious gap between steps of " + (thisTime - lastTime));
-	}
-	
 	if(thisTime - lastTime < 16 && thisTime - lastFrameSentTime > 100)
 	{
 		console.log("bad frame gap of " + (thisTime - lastFrameSentTime));
@@ -552,20 +544,6 @@ function simulateStep()
 		drawList = completeArrays();
 	}
 	
-	if(actualTimeNow - thisTime > 16 && actualTimeNow - lastSentDrawList > 100)
-	{
-		drawList = completeArrays();
-		console.log("OH SHIT TIME DIFF: " + (actualTimeNow - thisTime).toFixed(2));
-		postMessage("drawList|" + drawList);
-		
-		//lastFrameSentTime = actualTimeNow;
-		//lastSentDrawList = actualTimeNow;
-		drawList = null;
-	}
-	
-	//send to other thread
-	//drawArrays(drawList);
-	
 	
 	resetArrays();
 	
@@ -581,21 +559,6 @@ function simulateStep()
 	if(keyFrames[keyFrames.queueEnd].time < thisTime - 1000)
 	{
 		createKeyFrame();
-		//var eventToOut = botEvent;
-		//var outStr = "";
-		
-//		if(botEvent)
-//			outStr += "botEvent: "+ botEvent.eventNumber + "\n";
-//		if(topEvent)
-//			outStr += "topEvent: "+ topEvent.eventNumber + "\n";
-			
-		
-//		while(eventToOut != null)
-//		{
-//			outStr += "Event at time " + eventToOut.time + ": "+ eventToOut.eventNumber + "\n";
-//			eventToOut = eventToOut.next;
-//		}
-		////console.log(outStr);
 	}
 	
 	if(currentState == WorkerState.STARTED)
