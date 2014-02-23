@@ -614,10 +614,14 @@ function simulateStep()
 		
 		if(timeMeasure.now() - thisTime >= 8)
 		{
-			if(false && stackCounter < 50)
+			if(stackCounter < 500)
 			{
 				stackCounter++;
+				
+				lastTime = thisTime;
+				trueLastTime = thisTime;
 				simulateStep();
+				return;
 			}
 			else
 			{
