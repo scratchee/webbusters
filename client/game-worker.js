@@ -199,11 +199,52 @@ var keyFrames = new Array(10);
 keyFrames.queueStart = 0;
 keyFrames.queueEnd = 0;
 
-var topPooledEvent = null;
-var botPooledEvent = null;
+var eventList = new LinkedList();
+var deadEventList = new LinkedList();
 
-var topEvent = null;
-var botEvent = null;
+eventList.getEventIndexBefore = 	function(time)
+									{
+										var theIndex = -1;
+
+										for(var currIndex = this.list.length - 1 ; currIndex >= 0 ; currIndex--)
+										{
+											//console.log(currIndex+", "+this.list[currIndex]);
+											if(this.list[currIndex].time < time)
+											{
+												theIndex = currIndex;
+												break;
+											}
+										}
+
+										return theIndex;
+									};
+
+eventList.getEventIndexBeforeEq = 	function(time)
+									{
+										var theIndex = -1;
+
+										for(var currIndex = this.list.length - 1 ; currIndex >= 0 ; currIndex--)
+										{
+											//console.log(currIndex+", "+this.list[currIndex]);
+											if(this.list[currIndex].time <= time)
+											{
+												theIndex = currIndex;
+												break;
+											}
+										}
+
+										return theIndex;
+									};
+									
+eventList.getEventIndexAfter = 		function(time)
+									{
+										return this.getEventIndexBeforeEq(time) + 1;
+									};
+									
+eventList.getEventIndexAfterEq = 	function(time)
+									{
+										return this.getEventIndexBefore(time) + 1;
+									};
 
 var lastCompletedEvent = null;
 
@@ -260,79 +301,37 @@ function getKeyFrameBefore(time)
 
 function removeEventsBefore(newBotEvent)
 {
-	//Shift over bottom section of queue
-	var topDyingEvent = topEvent;
-	if(newBotEvent != null)
-		topDyingEvent = newBotEvent.last;
-	
-	var eventToDie = topDyingEvent;
-	while(eventToDie != null)
-	{
-		//console.log("Removing Event " + eventToDie.eventNumber + " " + eventToDie.eventString);
-		eventToDie = eventToDie.last;
-	}
-	
-	if(topPooledEvent == null)
-		topPooledEvent = topDyingEvent;
-	if(topDyingEvent != null)
-		topDyingEvent.next = botPooledEvent;
-	if(botPooledEvent != null)
-		botPooledEvent.last = topDyingEvent;
-	botPooledEvent = botEvent;
-	botEvent = newBotEvent;
-	if(botEvent != null)
-		botEvent.last = null;
-	else
-		topEvent = null;
+	//eventList.shiftAllBeforeTo(newBotEvent, deadEventList);
 }
 
 function getEventBefore(time)
 {
-	var result = null;
-	
-	for(var currEvent = topEvent ; currEvent != null ; currEvent = currEvent.last)
-	{
-		if(currEvent.time < time)
-		{
-			result = currEvent;
-			break;
-		}
-	}
-		
-	return result;
+	return eventList.getAt(eventList.getEventIndexBefore(time));
 }
 
 function getEventAfter(time)
 {
-	var result = null;
+	return eventList.getAt(eventList.getEventIndexAfter(time));
+}
 
-	var result = getEventBefore(time);
-	
-	if(result == null)
-		result = botEvent;
-	else
-		result = result.next;
-	
-	return result;
+function getEventBeforeEq(time)
+{
+	return eventList.getAt(eventList.getEventIndexBeforeEq(time));
+}
+
+function getEventAfterEq(time)
+{
+	return eventList.getAt(eventList.getEventIndexAfterEq(time));
 }
 
 function insertEvent(time, applyFunction, eventNumber, eventString)
 {
 	//extricate newEvent from pool
 	
-	var newEvent = topPooledEvent;
-	if(topPooledEvent == null)
+	var newEvent = deadEventList.pop();
+
+	if(newEvent == null)
 		newEvent = new GameEvent();
-	else
-	{
-		topPooledEvent = topPooledEvent.last;
-		
-		if(topPooledEvent != null)
-			topPooledEvent.next = null;
-	}
-	
-	if(newEvent == botPooledEvent)
-		botPooledEvent = null;
 	
 	//now assign stuff
 	
@@ -344,29 +343,12 @@ function insertEvent(time, applyFunction, eventNumber, eventString)
 	//console.log("Adding Event " + newEvent.eventNumber + " " + newEvent.eventString);
 	//Inserting time.
 	
-	var lastEvent = getEventBefore(time);
-	var nextEvent;
-	
-	newEvent.last = lastEvent;
-	
-	
-	if(lastEvent == null)
-	{
-		nextEvent = botEvent;
-		botEvent = newEvent;
-	}
+	var lastEvent = getEventBeforeEq(time);
+
+	if(lastEvent != null)
+		eventList.insertAfter(lastEvent, newEvent);
 	else
-	{
-		nextEvent = lastEvent.next;
-		lastEvent.next = newEvent;
-	}
-	
-	newEvent.next = nextEvent;
-	
-	if(nextEvent)
-		nextEvent.last = newEvent;
-	else
-		topEvent = newEvent;
+		eventList.insertStart(newEvent);
 }
 
 
@@ -385,16 +367,8 @@ function simulateStart()
 	for(var i = 0 ; i < 100 ; i++ )
 	{
 		var newEvent = new GameEvent();
-		if(i == 0)
-			botPooledEvent = newEvent;
-		
-		if(topPooledEvent)
-		{
-			topPooledEvent.next = newEvent;
-			newEvent.last = topPooledEvent;
-		}
-		
-		topPooledEvent = newEvent;
+
+		deadEventList.insertEnd(newEvent);
 	}
 	
 	
@@ -506,7 +480,7 @@ function simulateStep()
 		thisTime = lastTime + 8;
 	}
 	
-	var nextEvent = getEventAfter(lastTime);
+	var nextEvent = getEventBefore(lastTime);
 	
 	if(thisTime - trueLastTime != 8)
 	{
@@ -518,7 +492,7 @@ function simulateStep()
 		//console.log("Applying event " + nextEvent.eventNumber + " " + nextEvent.eventString);
 		nextEvent.apply();
 		lastCompletedEvent = nextEvent;
-		nextEvent = nextEvent.next;
+		nextEvent = eventList.getAt(eventList.find(nextEvent) + 1);
 	}
 	
 	

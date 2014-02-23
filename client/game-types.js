@@ -67,6 +67,105 @@ Object.preventExtensions(Vec2);
 
 
 
+//define LinkedList
+function LinkedList()
+{
+	this.list = new Array();
+
+	//Object.preventExtensions(this);
+}
+	
+LinkedList.prototype.insertStart = 		function(obj)
+										{
+											this.list.unshift(obj);
+										};
+
+LinkedList.prototype.insertEnd = 		function(obj)
+										{
+											this.list.push(obj);
+										};
+									
+LinkedList.prototype.insertAfter = 		function(obj, objToInsert)
+										{
+											var index = this.find(obj);
+											//should work with last element, "If greater than the length of the array, 
+											//actual starting index will be set to the length of the array"
+											this.list.splice(index+1, 0, objToInsert);
+										};
+
+LinkedList.prototype.insertBefore = 	function(obj)
+										{
+											var index = this.find(obj);
+
+											this.list.splice(index, 0, objToInsert);
+										};
+
+LinkedList.prototype.remove = 			function(obj)
+										{
+											var index = this.find(obj);
+
+											this.list.splice(index, 1);
+										};
+
+LinkedList.prototype.shift = 			function()
+										{
+											return this.list.shift();
+										};
+
+LinkedList.prototype.pop = 				function()
+										{
+											return this.list.pop();
+										};
+
+LinkedList.prototype.removeAllBefore = 	function(obj)
+										{
+											var index = this.find(obj);
+
+											this.list.splice(0, index);
+										};
+
+LinkedList.prototype.shiftAllBeforeTo = function(obj, linkedList)
+										{
+											var index = this.find(obj);
+
+
+											for(var i = 0 ; i < index ; i++)
+											{
+												linkedList.list.push(this.list[i]);
+											}
+
+											this.removeAllBefore(obj);
+											//var newList = this.list.slice(0, index);
+										};
+
+LinkedList.prototype.removeAllAfter = 	function(obj)
+										{
+											var index = this.find(obj);
+
+											this.list.splice(index, this.list.length - index);
+										};
+
+LinkedList.prototype.getAt = 			function(index)
+										{
+											return this.list[index];
+										};
+
+LinkedList.prototype.find = 			function(obj)
+										{
+											return this.list.indexOf(obj);
+										};
+
+LinkedList.prototype.length = 			function()
+										{
+											return this.list.length;
+										};
+
+Object.preventExtensions(LinkedList);
+
+
+
+
+
 //define Asteroid
 function Asteroid(pos,vel,size,arrayPos)
 {
