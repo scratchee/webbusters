@@ -535,11 +535,6 @@ function simulateStep()
 	
 	var nextEvent = getEventBefore(lastTime);
 	
-	if(thisTime - trueLastTime != 8)
-	{
-		//console.log("Time dilation event!");
-	}
-	
 	while(nextEvent != null && nextEvent.time < thisTime)
 	{
 		//console.log("Applying event " + nextEvent.eventNumber + " " + nextEvent.eventString);
