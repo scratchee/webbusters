@@ -80,9 +80,8 @@ function announcePeer()
 
 function onRecvConnection(connection)
 {
+	worker.postMessage("network|connect~1");
 	netConn = connection;
-	shipArray[0].shipFromPeer = false;
-	shipArray[1].shipFromPeer = true;
 	connection.on('data', onRecvData);
 }
 
@@ -96,11 +95,10 @@ function contactPeer()
 
 function onRecvConnectionResp() 
 {
+	worker.postMessage("network|connect~0");
 	netConn.send('Hello World!');
-	ownedShip = 1;
-	shipArray[0].shipFromPeer = true;
-	shipArray[1].shipFromPeer = false;
-	netConn.send(shipArray[ownedShip].genShipInfo());
+
+	//netConn.send(shipArray[ownedShip].genShipInfo());
 
 	netConn.on('data', onRecvData);
 }

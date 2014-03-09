@@ -148,7 +148,7 @@ function OnNetworkMessage(message)
 					break;
 				}
 			}
-
+			networked = true;
 			break;
 		default:
 			console.log("Unrecognised network message!");
