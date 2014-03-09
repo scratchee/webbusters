@@ -566,12 +566,10 @@ function GameKeyFrame(numShips, numAsteroids)
 	
 	this.asteroidInfoArray = new Array(numAsteroids);
 	
-	this.lastEvent = null;
-	
 	Object.preventExtensions(this);
 }
 
-GameKeyFrame.prototype.saveStateAsKeyFrame = function(lastEvent)
+GameKeyFrame.prototype.saveStateAsKeyFrame = function()
 											{
 												this.active = true;
 												for(var i = 0 ; i < shipArray.length ; i++)
@@ -583,8 +581,6 @@ GameKeyFrame.prototype.saveStateAsKeyFrame = function(lastEvent)
 												{
 													this.asteroidInfoArray[i] = asteroidInfoStringGen(asteroidArray[i]);
 												}
-												
-												this.lastEvent = lastEvent;
 												
 												this.time = thisTime;
 											};
@@ -604,8 +600,6 @@ GameKeyFrame.prototype.revertToKeyFrame = 	function()
 												thisTime = this.time;
 												//avoid nasty time dilations
 												lastTime = thisTime;
-												
-												lastCompletedEvent = this.lastEvent;
 												
 												reSimulating = true;
 											};

@@ -186,6 +186,7 @@ function AcceptKeyPress(message)
 			{
 				//console.log("Reverting to time " + keyFrameToRevertTo.time + " for event " + (eventNum-1) + " " + eventStr);
 				keyFrameToRevertTo.revertToKeyFrame();
+				keyFrames.lastKeyFrame = keyFrameToRevertTo;
 			}
 			else
 			{
@@ -195,9 +196,11 @@ function AcceptKeyPress(message)
 	}
 };
 
-var keyFrames = new Array(10);
-keyFrames.queueStart = 0;
-keyFrames.queueEnd = 0;
+var keyFrames = new LinkedList();
+
+keyFrames.lastKeyFrame = null;
+//keyFrames.queueStart = 0;
+//keyFrames.queueEnd = 0;
 
 var eventList = new LinkedList();
 var deadEventList = new LinkedList();
@@ -246,53 +249,69 @@ eventList.getEventIndexAfterEq = 	function(time)
 										return this.getEventIndexBefore(time) + 1;
 									};
 
-var lastCompletedEvent = null;
 
 function createKeyFrame()
 {
-	////console.log("creatingkeyframe" + thisTime);
-	var framePos = keyFrames.queueStart;
-	var done = false;
-	for( var i = keyFrames.queueEnd ; !done ; i = (i == 0) ? keyFrames.length-1 : i-1 )
+	var newKeyframe = null;
+	for( var i = keyFrames.length()-1 ; i >= 0 ; i-- )
 	{
-		if(keyFrames[i].time < thisTime)
+		//If we have skipped back before a keyframe, it is no longer valid
+		//otherwise, we can remove whatever keyframe is below
+		if(keyFrames.getAt(i).time < thisTime)
 		{
-			framePos = (i+1)%keyFrames.length;
-			//overwrite old frame
-			if(keyFrames.queueStart == framePos)
-			{
-				keyFrames.queueStart = (keyFrames.queueStart+1)%keyFrames.length;
-				
-				var lastEvent = keyFrames[keyFrames.queueStart].lastEvent;
-				
-				//Move orphaned events into pool (orphaned == not following keyframe)
-				if(lastEvent != null)
-				{
-					////console.log(getEventAfter(keyFrames[keyFrames.queueStart].time));
-					removeEventsBefore(getEventAfter(keyFrames[keyFrames.queueStart].time));
-				}
-			}
-			done = true;
+			break;
 		}
-		
-		if(i == keyFrames.queueStart)
-			done = true;
+		else
+		{
+			newKeyframe = keyFrames.getAt(i);
+		}
 	}
 	
-	keyFrames.queueEnd = framePos;
+	if(newKeyframe != null)
+	{
+		keyFrames.remove(newKeyframe);
+	}
+	else// if(keyFrames.getAt(0).time < thisTime - 10000)
+	{
+		for( var i = 0 ; i < keyFrames.length() ; i++ )
+		{
+			//If we have skipped back before a keyframe, it is no longer valid
+			//otherwise, we can remove whatever keyframe is below
+			if(keyFrames.getAt(i).time >= thisTime - 10000 || keyFrames.lastKeyFrame == keyFrames.getAt(i))
+			{
+				break;
+			}
+			else
+			{
+				newKeyframe = keyFrames.getAt(i);
+			}
+		}
+
+		if(newKeyframe != null)
+		{
+			keyFrames.remove(newKeyframe);
+			removeEventsBefore(getEventAfterEq(keyFrames.getAt(0).time));
+		}
+	}
+
+	if(newKeyframe == null)
+		newKeyframe = new GameKeyFrame();
+
 	////console.log("START" + keyFrames.queueStart + "FRAME" + framePos + "END" + keyFrames.queueEnd);
 	
-	keyFrames[framePos].saveStateAsKeyFrame(getEventBefore(thisTime));
+	newKeyframe.saveStateAsKeyFrame();
+	keyFrames.insertAfter(keyFrames.lastKeyFrame, newKeyframe);
+	keyFrames.lastKeyFrame = newKeyframe;
 }
 
 
 function getKeyFrameBefore(time)
 {
-	for( var i = keyFrames.queueEnd ; i != keyFrames.queueStart ; i = (i == 0) ? keyFrames.length-1 : i-1 )
+	for( var i = keyFrames.length()-1 ; i >= 0 ; i-- )
 	{
-		if(keyFrames[i].time < time)
+		if(keyFrames.getAt(i).time < time)
 		{
-			return keyFrames[i];
+			return keyFrames.getAt(i);
 		}
 	}
 	
@@ -301,7 +320,7 @@ function getKeyFrameBefore(time)
 
 function removeEventsBefore(newBotEvent)
 {
-	//eventList.shiftAllBeforeTo(newBotEvent, deadEventList);
+	eventList.shiftAllBeforeTo(newBotEvent, deadEventList);
 }
 
 function getEventBefore(time)
@@ -359,9 +378,9 @@ var drawList = null;
 function simulateStart()
 {
 	
-	for(var i = 0 ; i < keyFrames.length ; i++ )
+	for(var i = 0 ; i < keyFrames.length() ; i++ )
 	{
-		keyFrames[i] = new GameKeyFrame();
+		keyFrames.insertEnd(new GameKeyFrame());
 	}
 	
 	for(var i = 0 ; i < 100 ; i++ )
@@ -438,7 +457,7 @@ function simulateStart()
 	lastTime = timeMeasure.now();
 	thisTime = timeMeasure.now();
 	
-	keyFrames[0].saveStateAsKeyFrame();
+	createKeyFrame();
 }
 
 var trueLastTime = 0;
@@ -483,7 +502,6 @@ function simulateStep()
 	{
 		//console.log("Applying event " + nextEvent.eventNumber + " " + nextEvent.eventString);
 		nextEvent.apply();
-		lastCompletedEvent = nextEvent;
 		nextEvent = eventList.getAt(eventList.find(nextEvent) + 1);
 	}
 	
@@ -556,7 +574,7 @@ function simulateStep()
 		drawList = null;
 	}
 	
-	if(keyFrames[keyFrames.queueEnd].time < thisTime - 1000)
+	if(keyFrames.lastKeyFrame.time < thisTime - 1000)
 	{
 		createKeyFrame();
 	}
@@ -593,7 +611,10 @@ function simulateStep()
 			}
 		}
 		else
+		{
+            stackCounter = 0;
 			runTimeout = setTimeout(simulateStep, timeToNextFrame);
+		}
 	}
 	
 	lastTime = thisTime;
