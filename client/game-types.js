@@ -93,7 +93,7 @@ LinkedList.prototype.insertAfter = 		function(obj, objToInsert)
 											this.list.splice(index+1, 0, objToInsert);
 										};
 
-LinkedList.prototype.insertBefore = 	function(obj)
+LinkedList.prototype.insertBefore = 	function(obj, objToInsert)
 										{
 											var index = this.find(obj);
 
