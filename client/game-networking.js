@@ -71,10 +71,7 @@ function recvMetricsResponse(metricsResp)
 
 function announcePeer()
 {
-	peer = new Peer(myPeerID.value, {host: 'localhost', port: 9000});
-	
-	
-	ownedShip = 0;
+	peer = new Peer(myPeerID.value, {key: '3yxyadgjlh00be29'});
 	
 	peer.on('connection', onRecvConnection);
 	
@@ -84,6 +81,7 @@ function announcePeer()
 function onRecvConnection(connection)
 {
 	netConn = connection;
+	shipArray[0].shipFromPeer = false;
 	shipArray[1].shipFromPeer = true;
 	connection.on('data', onRecvData);
 }
