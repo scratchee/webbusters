@@ -114,6 +114,48 @@ function (oEvent)
 			break;
 	}
 };
+
+function OnNetworkMessage(message)
+{
+	var messageArray = message.split("~");
+	
+	var messageTitle = messageArray[0];
+	var messageBody = messageArray[1];
+	
+	switch(messageTitle)
+	{
+		case "connect":
+			var bodyArray = messageBody.split("\n");
+
+			//reset ships network status
+			for(var i = 0 ; i < shipArray.length ; i++)
+			{
+				shipArray[i].shipFromPeer = false;
+			}
+			
+			//set ships network status
+			for(var i = 0 ; i < bodyArray.length ; i++)
+			{
+				shipArray[bodyArray[i]].shipFromPeer = true;
+			}
+
+
+			for(var i = 0 ; i < shipArray.length ; i++)
+			{
+				if(shipArray[i].shipFromPeer == false)
+				{
+					ownedShip = i;
+					break;
+				}
+			}
+
+			break;
+		default:
+			console.log("Unrecognised network message!");
+			break;
+	}
+}
+
 var eventNum = 0;
 function AcceptKeyPress(message) 
 {
