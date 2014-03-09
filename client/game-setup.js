@@ -6,17 +6,27 @@ var workerTimeMeasure = Date;
 
 function startGame(numPlayers)
 {
-	ctx = document.getElementById("myCanvas").getContext("2d");
-	
+	canvas = document.getElementById("myCanvas");//.getContext("2d");
+	var canvasProxy = canvas.transferControlToProxy();
+
 	canvasRight = document.getElementById("myCanvas").width;
 	canvasBottom = document.getElementById("myCanvas").height;
 
 	worker = new Worker("game-worker.js");
-	
+	canvasWorker = new Worker("game-canvas-worker.js");
+
+	canvasWorker.onerror = function(event)
+	{
+		throw new Error(event.message + " (" + event.filename + ":" + event.lineno + ")");
+	};
+
 	worker.onerror = function(event)
 	{
 		throw new Error(event.message + " (" + event.filename + ":" + event.lineno + ")");
 	};
+
+
+	canvasWorker.postMessage(canvasProxy, [canvasProxy]);
 	
 	configObj.numPlayers = numPlayers;
 	configObj.canvasRight = canvasRight;
@@ -61,7 +71,7 @@ function startGame(numPlayers)
 		switch(messageTitle)
 		{
 			case "drawList":
-				drawArrays(messageBody);
+				canvasWorker.postMessage(messageBody);
 				break;
 			case "workerTime":
 				if(messageBody == "performance")

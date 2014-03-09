@@ -81,7 +81,8 @@ var ANPAStart = 0;
 var ANPAEnd = 0;
 var ANPALength = 0;
 
-var ctx;
+var canvas;
+var canvasWorker;
 
 var lastTime;
 var thisTime;
