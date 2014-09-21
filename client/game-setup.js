@@ -74,6 +74,9 @@ function startGame(numPlayers)
 					console.log(messageBody);
 				}
 				break;
+			case "network":
+				console.log("Unimplemented");
+				break;
 			default:
 				console.log("Unrecognised message!");
 				break;

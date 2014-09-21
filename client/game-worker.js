@@ -89,6 +89,7 @@ function (oEvent)
 			break;
 		case "network":
 			console.log(messageBody);
+			OnNetworkMessage(messageBody);
 			break;
 		case "imageRequest":
 			if(drawList != null)
@@ -150,17 +151,8 @@ function OnNetworkMessage(message)
 			}
 			networked = true;
 			break;
-		case "data":
-			if(messageBody.substring(0,4).valueOf() == "ship".valueOf())
-			{
-				var peeredShipNum = messageBody.split("\n")[1];
-				shipArray[peeredShipNum].recvShipInfo(messageBody);
-				//var otherShipInfo = JSON.parse(messageBody);
-				//var peeredShipNum = otherShipInfo.shipNum;
-				
-				//shipArray[peeredShipNum].recvShipInfo(otherShipInfo);
-			}
-			else if(messageBody.substring(0,7).valueOf() == "metric\n".valueOf())
+		case "metric":
+			if(messageBody.substring(0,7).valueOf() == "metric\n".valueOf())
 			{
 				var metricPacketJSON = messageBody.split("\n")[1];
 				var metricPacket = JSON.parse(metricPacketJSON);
@@ -174,8 +166,29 @@ function OnNetworkMessage(message)
 			}
 			else
 			{
-				recvAsteroidArray = messageBody;
-				recvAsteroid();
+				console.log("Unrecognised metric packet");
+			}
+		case "data":
+			var packet = JSON.parse(messageBody);
+
+			//Should be sentTime, but just getting started...
+			var packetTime = packet.receivedTime;
+			
+			if(messageBody.substring(0,4).valueOf() == "ship".valueOf())
+			{
+				var shipData = packet.data;
+
+				var peeredShipNum = shipData.split("\n")[1];
+				shipArray[peeredShipNum].recvShipInfo(shipData);
+				//var otherShipInfo = JSON.parse(messageBody);
+				//var peeredShipNum = otherShipInfo.shipNum;
+				
+				//shipArray[peeredShipNum].recvShipInfo(otherShipInfo);
+			}
+			else
+			{
+				var recvAsteroidArray = packet.data;
+				recvAsteroid(recvAsteroidArray);
 			}
 		default:
 			console.log("Unrecognised network message!");
@@ -185,7 +198,7 @@ function OnNetworkMessage(message)
 
 
 
-function recvAsteroid()
+function recvAsteroid(recvAsteroidArray)
 {
 	if(recvAsteroidArray != null)
 	{
@@ -223,7 +236,6 @@ function recvAsteroid()
 				asteroidArray[sentAsteroid] = null;
 			}
 		}
-		recvAsteroidArray = null;
 	}
 }
 
