@@ -88,7 +88,7 @@ function (oEvent)
 			canvasBottom = messageBody.canvasBottom;
 			break;
 		case "network":
-			//console.log("Unimplemented!!!!");
+			console.log(messageBody);
 			break;
 		case "imageRequest":
 			if(drawList != null)
@@ -150,10 +150,115 @@ function OnNetworkMessage(message)
 			}
 			networked = true;
 			break;
+		case "data":
+			if(messageBody.substring(0,4).valueOf() == "ship".valueOf())
+			{
+				var peeredShipNum = messageBody.split("\n")[1];
+				shipArray[peeredShipNum].recvShipInfo(messageBody);
+				//var otherShipInfo = JSON.parse(messageBody);
+				//var peeredShipNum = otherShipInfo.shipNum;
+				
+				//shipArray[peeredShipNum].recvShipInfo(otherShipInfo);
+			}
+			else if(messageBody.substring(0,7).valueOf() == "metric\n".valueOf())
+			{
+				var metricPacketJSON = messageBody.split("\n")[1];
+				var metricPacket = JSON.parse(metricPacketJSON);
+				recvMetricsPacket(metricPacket)
+			}
+			else if(messageBody.substring(0,11).valueOf() == "metricResp\n".valueOf())
+			{
+				var metricRespJSON = messageBody.split("\n")[1];
+				var metricResp = JSON.parse(metricRespJSON);
+				recvMetricsResponse(metricResp);
+			}
+			else
+			{
+				recvAsteroidArray = messageBody;
+				recvAsteroid();
+			}
 		default:
 			console.log("Unrecognised network message!");
 			break;
 	}
+}
+
+
+
+function recvAsteroid()
+{
+	if(recvAsteroidArray != null)
+	{
+		var recvAsteroidStrs = recvAsteroidArray.split("\n");
+		var sentAsteroid = recvAsteroidStrs[0];
+		if(recvAsteroidStrs[1].valueOf() === 'undefined'.valueOf())
+		{
+			asteroidArray[sentAsteroid] = null;
+		}
+		else
+		{
+			var recvAsteroid = JSON.parse(recvAsteroidStrs[1]);
+			if(recvAsteroid != null)
+			{
+				if(asteroidArray[sentAsteroid] == null)
+				{
+					//we'll fix this shim data in a second, so it doesn't matter
+					asteroidArray[sentAsteroid] = new Asteroid(new Vec2(0,0),new Vec2(0,0),1,sentAsteroid);
+				}
+				asteroidArray[sentAsteroid].pos.x = recvAsteroid.pos.x;
+				asteroidArray[sentAsteroid].pos.y = recvAsteroid.pos.y;
+				
+				asteroidArray[sentAsteroid].vel.x = recvAsteroid.vel.x;
+				asteroidArray[sentAsteroid].vel.y = recvAsteroid.vel.y;
+				
+				asteroidArray[sentAsteroid].size = recvAsteroid.size;
+				
+				asteroidArray[sentAsteroid].dead = recvAsteroid.dead;
+				asteroidArray[sentAsteroid].live = recvAsteroid.live;
+				
+				asteroidArray[sentAsteroid].deadTime = thisTime - recvAsteroid.deadTime;
+			}
+			else
+			{
+				asteroidArray[sentAsteroid] = null;
+			}
+		}
+		recvAsteroidArray = null;
+	}
+}
+
+function pushANPA(asteroid)
+{
+	for(var i = ANPAStart ; i != ANPAEnd ; i = (i+1)%ANPALength)
+	{
+		if(asteroid == asteroidNetPriorityArray[i])
+		{
+			//console.log("Asteroid already in array");
+			return;
+		}
+	}
+	if((ANPAEnd+1)%ANPALength != ANPAStart)
+	{
+		ANPAEnd = (ANPAEnd + 1)%ANPALength
+		asteroidNetPriorityArray[ANPAEnd] = asteroid;
+	}
+	else
+		console.log("OMG! TOO MANY ASTEROIDS!!1!");
+}
+
+
+function shiftANPA()
+{
+	var result = null;
+
+	if(ANPAStart != ANPAEnd)
+	{
+		result = asteroidNetPriorityArray[ANPAStart];
+		
+		ANPAStart = (ANPAStart + 1)%ANPALength;
+	}
+	
+	return result;
 }
 
 var eventNum = 0;

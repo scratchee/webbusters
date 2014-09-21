@@ -177,6 +177,12 @@ function sendNetworkData()
 	setTimeout(sendNetworkData, 100);
 }
 
+function sendNetworkDataFromWorker( theDataToSend )
+{
+	netConn.send(theDataToSend);
+	
+}
+
 function recvAsteroid()
 {
 	if(recvAsteroidArray != null)
